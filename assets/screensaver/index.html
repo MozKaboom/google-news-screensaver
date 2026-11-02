@@ -44,7 +44,7 @@
     position: absolute;
     left: calc(var(--unit) * 5); right: calc(var(--unit) * 5);
     top: calc(var(--unit) * 13); bottom: calc(var(--unit) * 8);
-    display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden;
+    display: flex; flex-direction: column; justify-content: center; overflow: hidden;
   }
   @media (orientation: landscape) {
     .content { right: calc(var(--unit) * 14); max-width: 1500px; top: calc(var(--unit) * 12); bottom: calc(var(--unit) * 7); }
@@ -93,7 +93,7 @@
   h1 {
     font-size: calc(var(--unit) * 6 * var(--fit, 1)); line-height: 1.12; font-weight: 700;
     letter-spacing: -0.015em;
-    display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 9; -webkit-box-orient: vertical; overflow: hidden;
     text-wrap: balance;
   }
   .coverage {
@@ -298,12 +298,13 @@
       // A cut-off headline hides a whole line. Big letters overhang their box by a few pixels, which is fine.
       var line = parseFloat(getComputedStyle(heads[i]).lineHeight) || 0;
       if (heads[i].scrollHeight > heads[i].clientHeight + line / 2) return false;
+      // A long word mustn't run off the side either.
+      if (heads[i].scrollWidth > heads[i].clientWidth + 1) return false;
     }
     return true;
   }
   function fit(content) {
-    // One headline stays an editorial size; several may grow further to use the space.
-    var low = 0.5, high = perScreen > 1 ? 2.2 : 1.5;
+    var low = 0.5, high = 2.4;
     content.style.setProperty('--fit', high);
     if (fits(content)) return;
     for (var step = 0; step < 9; step++) {
