@@ -4,6 +4,12 @@ A [Kiosk Satellite](https://kiosksatellite.com) screensaver that cycles through 
 
 This plugin is not affiliated with, endorsed by or sponsored by Google. It reads the public Google News RSS feeds.
 
+## Screenshots
+
+![A landscape screen showing four UK headlines from Google News in a two by two grid, each with its outlet's logo and the other outlets covering it](https://raw.githubusercontent.com/MozKaboom/google-news-screensaver/main/docs/screenshots/landscape.jpg)
+
+![A portrait screen showing three US headlines from Google News stacked, each with its outlet's logo and the other outlets covering it](https://raw.githubusercontent.com/MozKaboom/google-news-screensaver/main/docs/screenshots/portrait.jpg)
+
 ## Installation
 
 ### Community Plugins (Recommended)
