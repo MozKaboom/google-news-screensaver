@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google News Headlines</title>
+<style>
+  :root {
+    --text: #ffffff;
+    --muted: rgba(255, 255, 255, 0.72);
+    --faint: rgba(255, 255, 255, 0.18);
+    --unit: min(1vw, 1.6vh);
+  }
+  @media (orientation: portrait) {
+    :root { --unit: min(1.4vw, 1.1vh); }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #07090d; color: var(--text);
+    font-family: "Google Sans", "Roboto", "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .slide {
+    position: absolute; inset: 0;
+    opacity: 0; transition: opacity 1.4s ease;
+    background: var(--base);
+  }
+  .slide.shown { opacity: 1; }
+  /* Two soft glows in the slide's colours drift slowly while it shows. */
+  .glow {
+    position: absolute; width: 90vmax; height: 90vmax; border-radius: 50%;
+    filter: blur(6vmax); opacity: 0.55;
+  }
+  .glow.a { background: radial-gradient(circle, var(--a), transparent 62%); top: -45vmax; right: -30vmax; }
+  .glow.b { background: radial-gradient(circle, var(--b), transparent 62%); bottom: -55vmax; left: -35vmax; opacity: 0.4; }
+  .slide.shown .glow.a { animation: drift-a var(--duration, 12s) ease-in-out forwards; }
+  .slide.shown .glow.b { animation: drift-b var(--duration, 12s) ease-in-out forwards; }
+  @keyframes drift-a { to { transform: translate(-6vmax, 5vmax) scale(1.08); } }
+  @keyframes drift-b { to { transform: translate(5vmax, -4vmax) scale(1.1); } }
+  .content {
+    position: absolute;
+    left: calc(var(--unit) * 5); right: calc(var(--unit) * 5);
+    bottom: calc(var(--unit) * 8);
+    display: flex; flex-direction: column; gap: calc(var(--unit) * 2.2);
+  }
+  @media (orientation: landscape) {
+    .content { right: calc(var(--unit) * 14); max-width: 1500px; bottom: calc(var(--unit) * 7); }
+  }
+  .outlet {
+    display: flex; align-items: center; gap: calc(var(--unit) * 1.4);
+    font-size: calc(var(--unit) * 2.3); font-weight: 600;
+  }
+  .outlet img, .outlet .initial {
+    width: calc(var(--unit) * 4.4); height: calc(var(--unit) * 4.4);
+    border-radius: calc(var(--unit) * 1); background: #fff; object-fit: contain;
+    padding: calc(var(--unit) * 0.5); flex: none;
+  }
+  .outlet .initial {
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255, 255, 255, 0.16); color: var(--text); font-weight: 700; padding: 0;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--unit) * 1.2);
+    font-size: calc(var(--unit) * 1.7); color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;
+  }
+  .meta span + span::before { content: "\2022"; margin-right: calc(var(--unit) * 1.2); opacity: 0.6; }
+  h1 {
+    font-size: calc(var(--unit) * 6); line-height: 1.12; font-weight: 700;
+    letter-spacing: -0.015em;
+    display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
+    text-wrap: balance;
+  }
+  .coverage {
+    font-size: calc(var(--unit) * 2.2); line-height: 1.45; color: var(--muted);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    padding-left: calc(var(--unit) * 1.6); border-left: 3px solid var(--faint);
+  }
+  .coverage b { color: var(--text); font-weight: 500; }
+  .top {
+    position: absolute; top: calc(var(--unit) * 4); left: calc(var(--unit) * 5); right: calc(var(--unit) * 5);
+    display: flex; justify-content: space-between; align-items: flex-start;
+    z-index: 2; pointer-events: none;
+  }
+  .brand {
+    display: flex; align-items: center; gap: calc(var(--unit) * 1.2);
+    font-size: calc(var(--unit) * 1.8); font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  .mark {
+    display: inline-flex; flex-direction: column; justify-content: center; gap: 14%;
+    width: calc(var(--unit) * 2.8); height: calc(var(--unit) * 2.8); padding: 0 calc(var(--unit) * 0.55);
+    border-radius: 22%; background: rgba(255, 255, 255, 0.92);
+  }
+  .mark i { display: block; height: 11%; border-radius: 9px; background: #1d2433; }
+  .mark i:nth-child(1) { width: 100%; }
+  .mark i:nth-child(2) { width: 78%; }
+  .mark i:nth-child(3) { width: 90%; }
+  .brand small { font-weight: 400; color: var(--muted); letter-spacing: 0.06em; text-transform: none; }
+  .clock { text-align: right; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4); }
+  .clock .time { font-size: calc(var(--unit) * 5); font-weight: 300; line-height: 1; letter-spacing: -0.02em; }
+  .clock .date { font-size: calc(var(--unit) * 1.7); color: var(--muted); margin-top: calc(var(--unit) * 0.6); }
+  .progress {
+    position: absolute; left: calc(var(--unit) * 5); right: calc(var(--unit) * 5); bottom: calc(var(--unit) * 3);
+    display: flex; gap: calc(var(--unit) * 0.8); z-index: 2;
+  }
+  .progress div { flex: 1; height: 3px; border-radius: 3px; background: var(--faint); overflow: hidden; }
+  .progress div i { display: block; height: 100%; width: 0; background: rgba(255, 255, 255, 0.85); }
+  .progress div.done i { width: 100%; }
+  .progress div.now i { animation: fill var(--duration, 12s) linear forwards; }
+  @keyframes fill { to { width: 100%; } }
+  .notice {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: calc(var(--unit) * 2.4);
+    font-size: calc(var(--unit) * 2.6); color: var(--muted); text-align: center; padding: 10%;
+    background: radial-gradient(circle at 70% 20%, rgba(66, 103, 178, 0.35), transparent 60%), #0b0e14;
+  }
+  .notice .mark { width: calc(var(--unit) * 7); height: calc(var(--unit) * 7); padding: 0 calc(var(--unit) * 1.4); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.45; } }
+  .stale { color: #ffb4a8; }
+</style>
+</head>
+<body>
+<div id="slides"></div>
+<div class="top">
+  <div class="brand"><span class="mark"><i></i><i></i><i></i></span><span><span id="heading">Headlines</span> <small id="source">from Google News</small></span></div>
+  <div class="clock" id="clock" hidden><div class="time" id="time"></div><div class="date" id="date"></div></div>
+</div>
+<div class="progress" id="progress"></div>
+<script id="gn-data" type="application/json">__GN_DATA__</script>
+<script>
+(function () {
+  'use strict';
+  var data;
+  try { data = JSON.parse(document.getElementById('gn-data').textContent); } catch (e) { data = null; }
+  if (!data || typeof data !== 'object') data = { stories: [], options: {}, updated: 0, error: null };
+  var options = data.options || {};
+  var stories = data.stories || [];
+  var seconds = Math.max(5, Number(options.secondsPerStory) || 12);
+  document.documentElement.style.setProperty('--duration', seconds + 's');
+  if (options.language) document.documentElement.lang = options.language;
+
+  // Base, first glow and second glow for each slide, in turn.
+  var palettes = [
+    ['#0c1424', '#2f5fd0', '#18a3a3'],
+    ['#1a0f1f', '#b03a6b', '#5b3fc4'],
+    ['#0b1a17', '#1f9d6b', '#2a6fc9'],
+    ['#1d130b', '#d0752f', '#b8323f'],
+    ['#10111f', '#6046d6', '#d04a8a'],
+    ['#0a171d', '#2390b8', '#3ab87a'],
+    ['#1c0d0e', '#c4423a', '#d49a2a']
+  ];
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  function ago(date) {
+    var t = Date.parse(date);
+    if (!t) return null;
+    var minutes = Math.round((Date.now() - t) / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return minutes + ' min ago';
+    var hours = Math.round(minutes / 60);
+    if (hours < 24) return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+    var days = Math.round(hours / 24);
+    return days + (days === 1 ? ' day ago' : ' days ago');
+  }
+
+  function list(names) {
+    if (names.length === 1) return names[0];
+    return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+  }
+
+  var heading = options.heading || 'Top stories';
+  document.getElementById('heading').textContent = heading + (options.edition ? ' · ' + options.edition : '');
+
+  // The clock follows the kiosk's own locale and 12 or 24 hour preference.
+  if (options.showClock !== false) {
+    var clock = document.getElementById('clock');
+    clock.hidden = false;
+    var tick = function () {
+      var now = new Date();
+      document.getElementById('time').textContent = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      document.getElementById('date').textContent = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+    };
+    tick();
+    setInterval(tick, 1000 * 15);
+  }
+
+  var root = document.getElementById('slides');
+  if (!stories.length) {
+    var notice = el('div', 'notice');
+    var mark = el('span', 'mark');
+    for (var k = 0; k < 3; k++) mark.appendChild(el('i'));
+    notice.appendChild(mark);
+    var message = data.error ? data.error + '. Trying again soon.'
+      : data.updated ? 'No stories match ' + heading + ' right now.' : 'Loading headlines…';
+    notice.appendChild(el('div', data.error ? 'stale' : null, message));
+    root.appendChild(notice);
+    return;
+  }
+  if (data.error) {
+    document.getElementById('source').textContent = 'from Google News · offline, last update ' +
+      new Date(data.updated).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    document.getElementById('source').className = 'stale';
+  }
+
+  var slides = stories.map(function (story, n) {
+    var slide = el('div', 'slide');
+    var colours = palettes[n % palettes.length];
+    slide.style.setProperty('--base', colours[0]);
+    slide.style.setProperty('--a', colours[1]);
+    slide.style.setProperty('--b', colours[2]);
+    slide.appendChild(el('div', 'glow a'));
+    slide.appendChild(el('div', 'glow b'));
+    var content = el('div', 'content');
+    if (story.source) {
+      var outlet = el('div', 'outlet');
+      if (story.logo) {
+        var logo = el('img');
+        logo.src = story.logo;
+        logo.alt = '';
+        outlet.appendChild(logo);
+      } else {
+        outlet.appendChild(el('span', 'initial', story.source.charAt(0).toUpperCase()));
+      }
+      outlet.appendChild(el('span', null, story.source));
+      content.appendChild(outlet);
+    }
+    content.appendChild(el('h1', null, story.title));
+    var meta = el('div', 'meta');
+    var when = ago(story.start);
+    if (when) meta.appendChild(el('span', 'when', when));
+    if (meta.firstChild) content.appendChild(meta);
+    var others = story.outlets || [];
+    if (options.showCoverage !== false && others.length) {
+      var coverage = el('p', 'coverage');
+      coverage.appendChild(document.createTextNode('Also covered by '));
+      var named = others.slice(0, 4);
+      if (others.length > 4) named.push(others.length - 4 + ' more');
+      coverage.appendChild(el('b', null, list(named)));
+      content.appendChild(coverage);
+    }
+    slide.appendChild(content);
+    root.appendChild(slide);
+    slide._story = story;
+    return slide;
+  });
+
+  var progress = document.getElementById('progress');
+  var bars = stories.length > 1 ? stories.map(function () {
+    var bar = el('div');
+    bar.appendChild(el('i'));
+    progress.appendChild(bar);
+    return bar;
+  }) : [];
+
+  var index = -1;
+  function restart(node) { node.style.animation = 'none'; void node.offsetWidth; node.style.animation = ''; }
+  function show(next) {
+    if (index >= 0) slides[index].classList.remove('shown');
+    index = next;
+    var slide = slides[index];
+    var when = slide.querySelector('.when');
+    if (when) when.textContent = ago(slide._story.start) || '';
+    Array.prototype.forEach.call(slide.querySelectorAll('.glow'), restart);
+    slide.classList.add('shown');
+    bars.forEach(function (bar, i) {
+      bar.className = i < index ? 'done' : '';
+      restart(bar.firstChild);
+      if (i === index) bar.className = 'now';
+    });
+  }
+  show(0);
+  if (slides.length > 1) setInterval(function () { show((index + 1) % slides.length); }, seconds * 1000);
+})();
+</script>
+</body>
+</html>

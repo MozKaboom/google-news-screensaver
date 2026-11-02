@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "google-news-headlines",
+  "name": "Google News Headlines",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAndroidSdk": 24,
+  "minAppVersion": "2026.10.45",
+  "entryClass": "kiosk.googlenews.GoogleNewsPlugin",
+  "description": "A screensaver that cycles through the headlines on Google News for the edition and section you pick, or for a search, with each story's outlet, its logo and the other outlets covering it. Select Headlines (Google News Headlines) under Screensaver > Screensaver mode.",
+  "author": "MozKaboom",
+  "license": "Apache-2.0",
+  "capabilities": [
+    "screensaver"
+  ],
+  "icon": "icon.png",
+  "settings": [
+    {
+      "key": "edition",
+      "type": "select",
+      "title": "Edition",
+      "default": "United Kingdom",
+      "options": ["United Kingdom", "United States", "Ireland", "Canada", "Australia", "New Zealand", "India", "Singapore", "South Africa", "Nigeria", "Philippines", "Deutschland", "France", "España", "Italia", "Nederland", "Portugal", "Brasil", "México", "日本"],
+      "group": "Stories",
+      "description": "The Google News edition to show, which sets the country and language of the headlines."
+    },
+    {
+      "key": "section",
+      "type": "select",
+      "title": "Section",
+      "default": "Top stories",
+      "options": ["Top stories", "World", "Your country", "Business", "Technology", "Entertainment", "Sport", "Science", "Health"],
+      "group": "Stories",
+      "description": "Which Google News section to show. Your country is the edition's national news."
+    },
+    {
+      "key": "search",
+      "type": "string",
+      "title": "Search instead",
+      "default": "",
+      "group": "Stories",
+      "description": "Show the latest stories about a subject, such as a team or a town, instead of a section. Leave empty to use the section."
+    },
+    {
+      "key": "storyCount",
+      "type": "number",
+      "title": "Number of stories",
+      "default": 10,
+      "min": 3,
+      "max": 20,
+      "step": 1,
+      "group": "Stories",
+      "description": "How many headlines to cycle through, in the order Google News lists them."
+    },
+    {
+      "key": "secondsPerStory",
+      "type": "number",
+      "title": "Time per story",
+      "default": 12,
+      "min": 5,
+      "max": 120,
+      "step": 1,
+      "unit": "s",
+      "group": "Stories",
+      "description": "How long each headline stays on screen."
+    },
+    {
+      "key": "refreshMinutes",
+      "type": "number",
+      "title": "Refresh every",
+      "default": 30,
+      "min": 10,
+      "max": 240,
+      "step": 5,
+      "unit": "min",
+      "group": "Stories",
+      "description": "How often to load the latest headlines from Google News."
+    },
+    {
+      "key": "showLogos",
+      "type": "boolean",
+      "title": "Show outlet logos",
+      "default": true,
+      "group": "Appearance",
+      "description": "Download each outlet's logo from Google. Turn off to show its initial instead."
+    },
+    {
+      "key": "showCoverage",
+      "type": "boolean",
+      "title": "Show other coverage",
+      "default": true,
+      "group": "Appearance",
+      "description": "Name the other outlets covering each story, when Google News groups them."
+    },
+    {
+      "key": "showClock",
+      "type": "boolean",
+      "title": "Show clock",
+      "default": true,
+      "group": "Appearance",
+      "description": "Show the time and date in the top right corner."
+    }
+  ],
+  "commands": [
+    {
+      "id": "refresh",
+      "title": "Refresh headlines"
+    }
+  ]
+}
