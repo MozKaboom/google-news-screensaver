@@ -50,7 +50,7 @@
       "max": 20,
       "step": 1,
       "group": "Stories",
-      "description": "How many headlines to cycle through, in the order Google News lists them."
+      "description": "How many headlines to cycle through, in the order Google News lists them. With several headlines per screen it rounds up to fill the last screen."
     },
     {
       "key": "perScreen",

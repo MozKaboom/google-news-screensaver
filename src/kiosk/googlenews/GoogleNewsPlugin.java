@@ -86,7 +86,7 @@ public final class GoogleNewsPlugin implements KioskPlugin {
         Settings next = new Settings(values);
         settings = next;
         if (worker == null || previous == null) return;
-        if (next.refreshMinutes != previous.refreshMinutes || next.storyCount != previous.storyCount
+        if (next.refreshMinutes != previous.refreshMinutes || next.storyLimit() != previous.storyLimit()
                 || !next.feedUrl().equals(previous.feedUrl()) || (next.showLogos && !previous.showLogos)) {
             scheduleRefresh(0);
         } else if (!next.equals(previous)) {
@@ -128,7 +128,7 @@ public final class GoogleNewsPlugin implements KioskPlugin {
     void refresh() {
         Settings current = settings;
         try {
-            List<Map<String, Object>> fresh = HeadlineFeed.parse(fetcher.feed(current.feedUrl()), current.storyCount);
+            List<Map<String, Object>> fresh = HeadlineFeed.parse(fetcher.feed(current.feedUrl()), current.storyLimit());
             if (fresh.isEmpty()) {
                 if (current.search.isEmpty()) throw new IOException("No stories found on Google News");
                 // A search with no results is an answer, not a failure.
@@ -233,6 +233,11 @@ public final class GoogleNewsPlugin implements KioskPlugin {
             showLogos = flag(values.get("showLogos"), true);
             showCoverage = flag(values.get("showCoverage"), true);
             showClock = flag(values.get("showClock"), true);
+        }
+
+        /** The story count rounded up to whole screens, so no screen is left part empty. */
+        int storyLimit() {
+            return (storyCount + perScreen - 1) / perScreen * perScreen;
         }
 
         String feedUrl() {

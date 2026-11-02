@@ -44,8 +44,8 @@ The **Refresh headlines** action loads the latest headlines right away. Run it f
 | Edition | United Kingdom | The Google News edition, which sets the country and language of the headlines. |
 | Section | Top stories | Top stories, World, Your country, Business, Technology, Entertainment, Sport, Science or Health. Your country is the edition's national news. |
 | Search instead | Empty | The latest stories about a subject, such as a team or a town, instead of a section. Leave it empty to use the section. |
-| Number of stories | 10 | How many headlines to cycle through, 3 to 20, in the order Google News lists them. |
-| Headlines per screen | 1 | How many headlines to show at once, 1 to 4. More than one stacks them on a portrait screen and puts them side by side on a landscape one. |
+| Number of stories | 10 | How many headlines to cycle through, 3 to 20, in the order Google News lists them. With several headlines per screen it rounds up to fill the last screen. |
+| Headlines per screen | 1 | How many headlines to show at once, 1 to 4. More than one stacks them on a portrait screen and puts them side by side on a landscape one. The text grows or shrinks to fill the screen. |
 | Time per screen | 12 s | How long each screen of headlines stays up. |
 | Refresh every | 30 min | How often to load the latest headlines. |
 | Show outlet logos | On | Download each outlet's logo from Google. Turn off to show its initial instead. |

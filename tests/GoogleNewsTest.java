@@ -64,6 +64,12 @@ public final class GoogleNewsTest {
         assert HeadlineFeed.url("Nowhere", "Nothing", "Arsenal & Spurs").equals("https://news.google.com/rss/search?q=Arsenal+%26+Spurs&hl=en-GB&gl=GB&ceid=GB:en");
         assert HeadlineFeed.url("\u65e5\u672c", "Technology", null).equals("https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=ja&gl=JP&ceid=JP:ja");
         assert HeadlineFeed.heading("World", "").equals("World");
+        Map<String, Object> grouped = new HashMap<>();
+        grouped.put("storyCount", 10);
+        grouped.put("perScreen", 3);
+        assert new GoogleNewsPlugin.Settings(grouped).storyLimit() == 12;
+        grouped.put("perScreen", 1);
+        assert new GoogleNewsPlugin.Settings(grouped).storyLimit() == 10;
         assert HeadlineFeed.unescape("&amp;lt;&#39;&#x41;&bogus;").equals("&lt;'A&bogus;");
 
         List<Map<String, Object>> stories = HeadlineFeed.parse(feed(), 10);
