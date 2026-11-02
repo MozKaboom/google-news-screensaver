@@ -215,6 +215,7 @@ public final class GoogleNewsPlugin implements KioskPlugin {
         final String section;
         final String search;
         final int storyCount;
+        final int perScreen;
         final int secondsPerStory;
         final int refreshMinutes;
         final boolean showLogos;
@@ -226,6 +227,7 @@ public final class GoogleNewsPlugin implements KioskPlugin {
             section = choice(values.get("section"), HeadlineFeed.SECTIONS.keySet(), "Top stories");
             search = values.get("search") instanceof String ? ((String) values.get("search")).trim() : "";
             storyCount = number(values.get("storyCount"), 10, 3, 20);
+            perScreen = number(values.get("perScreen"), 1, 1, 4);
             secondsPerStory = number(values.get("secondsPerStory"), 12, 5, 120);
             refreshMinutes = number(values.get("refreshMinutes"), 30, 10, 240);
             showLogos = flag(values.get("showLogos"), true);
@@ -242,6 +244,7 @@ public final class GoogleNewsPlugin implements KioskPlugin {
             options.put("heading", HeadlineFeed.heading(section, search));
             options.put("edition", edition);
             options.put("language", HeadlineFeed.EDITIONS.get(edition)[0]);
+            options.put("perScreen", perScreen);
             options.put("secondsPerStory", secondsPerStory);
             options.put("showCoverage", showCoverage);
             options.put("showClock", showClock);
@@ -267,12 +270,12 @@ public final class GoogleNewsPlugin implements KioskPlugin {
             if (!(other instanceof Settings)) return false;
             Settings o = (Settings) other;
             return edition.equals(o.edition) && section.equals(o.section) && search.equals(o.search)
-                && storyCount == o.storyCount && secondsPerStory == o.secondsPerStory && refreshMinutes == o.refreshMinutes
+                && storyCount == o.storyCount && perScreen == o.perScreen && secondsPerStory == o.secondsPerStory && refreshMinutes == o.refreshMinutes
                 && showLogos == o.showLogos && showCoverage == o.showCoverage && showClock == o.showClock;
         }
 
         @Override public int hashCode() {
-            return Objects.hash(edition, section, search, storyCount, secondsPerStory, refreshMinutes, showLogos, showCoverage, showClock);
+            return Objects.hash(edition, section, search, storyCount, perScreen, secondsPerStory, refreshMinutes, showLogos, showCoverage, showClock);
         }
     }
 }

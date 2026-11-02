@@ -96,6 +96,7 @@ public final class GoogleNewsTest {
         Map<String, Object> settings = new HashMap<>();
         settings.put("edition", "Ireland");
         settings.put("secondsPerStory", 20);
+        settings.put("perScreen", 9);
         plugin.start(host, settings);
         waitFor(() -> host.documents.size() >= 2 && host.status != null);
         assert requests.get(0).equals("https://news.google.com/rss?hl=en-IE&gl=IE&ceid=IE:en") : requests;
@@ -103,6 +104,7 @@ public final class GoogleNewsTest {
         String shown = host.documents.get(host.documents.size() - 1);
         assert shown.contains("Nine killed in jet crash") && shown.contains("data:image/png;base64,iVBORw==") : shown;
         assert shown.contains("\"heading\":\"Top stories\"") && shown.contains("\"edition\":\"Ireland\"") && shown.contains("\"secondsPerStory\":20");
+        assert shown.contains("\"perScreen\":4") : shown;
         assert host.status.startsWith("3 stories") && !host.statusError : host.status;
         int logoRequests = requests.size() - 1;
         assert logoRequests == 2 : requests;

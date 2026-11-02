@@ -47,6 +47,33 @@
   @media (orientation: landscape) {
     .content { right: calc(var(--unit) * 14); max-width: 1500px; bottom: calc(var(--unit) * 7); }
   }
+  .item { display: flex; flex-direction: column; gap: calc(var(--unit) * 2.2); min-width: 0; }
+  /* Several headlines: they share the space between the brand and the progress bars. */
+  .content.multi {
+    top: calc(var(--unit) * 13); justify-content: center; overflow: hidden; gap: calc(var(--unit) * 3.5 * var(--fit, 1));
+  }
+  .multi .item { gap: calc(var(--unit) * 1.3 * var(--fit, 1)); }
+  .multi .item + .item { border-top: 1px solid var(--faint); padding-top: calc(var(--unit) * 3.5 * var(--fit, 1)); }
+  .multi h1 { font-size: calc(var(--unit) * 4.6 * var(--fit, 1)); -webkit-line-clamp: 4; }
+  .multi.n3 h1, .multi.n4 h1 { font-size: calc(var(--unit) * 3.9 * var(--fit, 1)); -webkit-line-clamp: 3; }
+  .multi .outlet { font-size: calc(var(--unit) * 2 * var(--fit, 1)); }
+  .multi .outlet img, .multi .outlet .initial { width: calc(var(--unit) * 3.6 * var(--fit, 1)); height: calc(var(--unit) * 3.6 * var(--fit, 1)); }
+  .multi .meta { font-size: calc(var(--unit) * 1.5 * var(--fit, 1)); }
+  .multi .coverage { font-size: calc(var(--unit) * 1.9 * var(--fit, 1)); -webkit-line-clamp: 1; }
+  @media (orientation: landscape) {
+    /* Side by side: two or three columns, or two by two. */
+    .content.multi {
+      right: calc(var(--unit) * 5); max-width: none; top: calc(var(--unit) * 12);
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-content: end; gap: calc(var(--unit) * 4 * var(--fit, 1)) calc(var(--unit) * 5 * var(--fit, 1));
+    }
+    .content.multi.n3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .multi .item, .multi .item + .item { border-top: 1px solid var(--faint); padding-top: calc(var(--unit) * 2.5 * var(--fit, 1)); }
+    .multi.n2 h1 { font-size: calc(var(--unit) * 4.2 * var(--fit, 1)); }
+    .multi.n3 h1, .multi.n4 h1 { font-size: calc(var(--unit) * 3.4 * var(--fit, 1)); }
+    .multi.n3 h1 { -webkit-line-clamp: 6; }
+    .multi.n3 .coverage { -webkit-line-clamp: 2; }
+  }
   .outlet {
     display: flex; align-items: center; gap: calc(var(--unit) * 1.4);
     font-size: calc(var(--unit) * 2.3); font-weight: 600;
@@ -209,15 +236,8 @@
     document.getElementById('source').className = 'stale';
   }
 
-  var slides = stories.map(function (story, n) {
-    var slide = el('div', 'slide');
-    var colours = palettes[n % palettes.length];
-    slide.style.setProperty('--base', colours[0]);
-    slide.style.setProperty('--a', colours[1]);
-    slide.style.setProperty('--b', colours[2]);
-    slide.appendChild(el('div', 'glow a'));
-    slide.appendChild(el('div', 'glow b'));
-    var content = el('div', 'content');
+  function item(story) {
+    var content = el('div', 'item');
     if (story.source) {
       var outlet = el('div', 'outlet');
       if (story.logo) {
@@ -233,8 +253,9 @@
     }
     content.appendChild(el('h1', null, story.title));
     var meta = el('div', 'meta');
-    var when = ago(story.start);
-    if (when) meta.appendChild(el('span', 'when', when));
+    var when = el('span', 'when', ago(story.start));
+    when._start = story.start;
+    if (when.textContent) meta.appendChild(when);
     if (meta.firstChild) content.appendChild(meta);
     var others = story.outlets || [];
     if (options.showCoverage !== false && others.length) {
@@ -245,14 +266,51 @@
       coverage.appendChild(el('b', null, list(named)));
       content.appendChild(coverage);
     }
+    return content;
+  }
+
+  // Each screen shows one to four headlines, in feed order.
+  var perScreen = Math.max(1, Math.min(4, Math.round(Number(options.perScreen) || 1)));
+  var screens = [];
+  for (var s = 0; s < stories.length; s += perScreen) screens.push(stories.slice(s, s + perScreen));
+
+  var slides = screens.map(function (group, n) {
+    var slide = el('div', 'slide');
+    var colours = palettes[n % palettes.length];
+    slide.style.setProperty('--base', colours[0]);
+    slide.style.setProperty('--a', colours[1]);
+    slide.style.setProperty('--b', colours[2]);
+    slide.appendChild(el('div', 'glow a'));
+    slide.appendChild(el('div', 'glow b'));
+    var content = el('div', perScreen > 1 ? 'content multi n' + perScreen : 'content');
+    group.forEach(function (story) { content.appendChild(item(story)); });
     slide.appendChild(content);
     root.appendChild(slide);
-    slide._story = story;
     return slide;
   });
 
+  // Shrink a screen of several headlines until they all fit between the brand and the progress bars.
+  function fit(content) {
+    var first = content.firstChild, last = content.lastChild;
+    var scale = 1;
+    content.style.setProperty('--fit', scale);
+    while (scale > 0.55) {
+      var box = content.getBoundingClientRect();
+      if (first.getBoundingClientRect().top >= box.top - 1 && last.getBoundingClientRect().bottom <= box.bottom + 1) break;
+      scale -= 0.05;
+      content.style.setProperty('--fit', scale);
+    }
+  }
+  function fitAll() {
+    Array.prototype.forEach.call(document.querySelectorAll('.content.multi'), fit);
+  }
+  if (perScreen > 1) {
+    fitAll();
+    window.addEventListener('resize', fitAll);
+  }
+
   var progress = document.getElementById('progress');
-  var bars = stories.length > 1 ? stories.map(function () {
+  var bars = slides.length > 1 ? slides.map(function () {
     var bar = el('div');
     bar.appendChild(el('i'));
     progress.appendChild(bar);
@@ -265,8 +323,9 @@
     if (index >= 0) slides[index].classList.remove('shown');
     index = next;
     var slide = slides[index];
-    var when = slide.querySelector('.when');
-    if (when) when.textContent = ago(slide._story.start) || '';
+    Array.prototype.forEach.call(slide.querySelectorAll('.when'), function (when) {
+      when.textContent = ago(when._start) || '';
+    });
     Array.prototype.forEach.call(slide.querySelectorAll('.glow'), restart);
     slide.classList.add('shown');
     bars.forEach(function (bar, i) {

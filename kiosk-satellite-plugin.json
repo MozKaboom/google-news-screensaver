@@ -53,16 +53,27 @@
       "description": "How many headlines to cycle through, in the order Google News lists them."
     },
     {
+      "key": "perScreen",
+      "type": "number",
+      "title": "Headlines per screen",
+      "default": 1,
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "group": "Stories",
+      "description": "How many headlines to show at once. More than one stacks them on a portrait screen and puts them side by side on a landscape one."
+    },
+    {
       "key": "secondsPerStory",
       "type": "number",
-      "title": "Time per story",
+      "title": "Time per screen",
       "default": 12,
       "min": 5,
       "max": 120,
       "step": 1,
       "unit": "s",
       "group": "Stories",
-      "description": "How long each headline stays on screen."
+      "description": "How long each screen of headlines stays up."
     },
     {
       "key": "refreshMinutes",
